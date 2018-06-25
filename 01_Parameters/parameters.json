@@ -1,0 +1,10 @@
+"Parameters": {
+
+        "Environment": {
+            "Description": "Select which environment are you deploying.",
+            "Type": "String",
+            "AllowedValues" : ["production", "development"],
+            "Default": "production"
+        }
+
+    },

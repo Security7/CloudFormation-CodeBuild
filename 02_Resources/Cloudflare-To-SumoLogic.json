@@ -1,0 +1,54 @@
+"CodeBuildForCloudflareToSumoLogic": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForCloudflareToSumoLogic"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Cloudflare to SumoLogic source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                    },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/Step_Function_Igniter",
+                  "Type" : "GITHUB",
+                },
+                "TimeoutInMinutes" : 60,
+                "Artifacts" : {
+                    "Type": "no_artifacts"
+                },
+                "Environment" : {
+                    "Type": "LINUX_CONTAINER",
+                    "ComputeType": "BUILD_GENERAL1_SMALL",
+                    "Image": "aws/codebuild/nodejs:8.11.0",
+                    "EnvironmentVariables" : [
+                        {"Name" : "stage", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                    ]
+              },
+                "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForCloudflareToSumoLogic", "Arn"] },
+                "Triggers" : {
+                    "Webhook" : true
+                }
+            }
+        },
+
+        "RoleCodeBuildForCloudflareToSumoLogic": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"} ]]},
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "codebuild.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+                ]
+            }
+        },
