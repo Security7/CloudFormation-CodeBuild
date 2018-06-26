@@ -7,48 +7,70 @@
                 "Source" : {
                   "Auth" : {
                       "Type" : "OAUTH"
-                    },
+                  },
                   "GitCloneDepth" : 1,
                   "Location" : "https://github.com/Security7/Step_Function_Iterator",
-                  "Type" : "GITHUB",
-                },
-                "TimeoutInMinutes" : 60,
-                "Artifacts" : {
-                    "Type": "no_artifacts"
-                },
-                "Environment" : {
-                    "Type": "LINUX_CONTAINER",
-                    "ComputeType": "BUILD_GENERAL1_SMALL",
-                    "Image": "aws/codebuild/nodejs:8.11.0",
-                    "EnvironmentVariables" : [
-                        {"Name" : "stage", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
-                    ]
+                  "Type" : "GITHUB"
               },
-                "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionIterator", "Arn"] },
-                "Triggers" : {
-                    "Webhook" : true
-                }
-            }
-        },
-
-        "RoleCodeBuildForStepFunctionIterator": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Iterator", "-", { "Ref": "AWS::StackName"} ]]},
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": "codebuild.amazonaws.com"
-                            },
-                            "Action": "sts:AssumeRole"
-                        }
-                    ]
-                },
-                "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
                 ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionIterator", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
             }
-        },
+        }
+    },
+
+    "RoleCodeBuildForStepFunctionIterator": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Iterator", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForStepFunctionIterator",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Iterator", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Iterator", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }

@@ -7,58 +7,60 @@
                 "Source" : {
                   "Auth" : {
                       "Type" : "OAUTH"
-                    },
+                  },
                   "GitCloneDepth" : 1,
                   "Location" : "https://github.com/Security7/Step_Function_Stopwatch",
-                  "Type" : "GITHUB",
-                },
-                "TimeoutInMinutes" : 60,
-                "Artifacts" : {
-                    "Type": "no_artifacts"
-                },
-                "Environment" : {
-                    "Type": "LINUX_CONTAINER",
-                    "ComputeType": "BUILD_GENERAL1_SMALL",
-                    "Image": "aws/codebuild/nodejs:8.11.0",
-                    "EnvironmentVariables" : [
-                        {"Name" : "stage", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
-                    ]
+                  "Type" : "GITHUB"
               },
-                "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionStopwatch", "Arn"] },
-                "Triggers" : {
-                    "Webhook" : true
-                }
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionStopwatch", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
             }
-        },
+        }
+    },
 
-        "RoleCodeBuildForStepFunctionStopwatch": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"} ]]},
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": "codebuild.amazonaws.com"
-                            },
-                            "Action": "sts:AssumeRole"
-                        }
-                    ]
-                },
-                "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-                ],
-                "Policies": [
+    "RoleCodeBuildForStepFunctionStopwatch": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
                     {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForStepFunctionStopwatch",
+                    "PolicyDocument": {
                         "Version": "2012-10-17",
                         "Statement": [
                             {
                                 "Effect": "Allow",
                                 "Resource": [
-                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]}, ]]},
-                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]},, ":", "*"]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
                                 ],
                                 "Action": [
                                     "logs:CreateLogGroup",
@@ -68,9 +70,7 @@
                             }
                         ]
                     }
-                ]
-            }
+                }
+            ]
         }
-
-
-
+    }

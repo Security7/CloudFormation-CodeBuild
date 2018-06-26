@@ -1,0 +1,490 @@
+{
+    "Parameters": {
+
+        "Environment": {
+            "Description": "Select which environment are you deploying.",
+            "Type": "String",
+            "AllowedValues" : ["production", "development"],
+            "Default": "production"
+        }
+
+    },
+
+    "Resources": {
+
+        "CodeBuildForCloudflareToSumoLogic": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForCloudflareToSumoLogic"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Cloudflare-To-SumoLogic source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                  },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/Cloudflare-To-SumoLogic",
+                  "Type" : "GITHUB"
+              },
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForCloudflareToSumoLogic", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
+            }
+        }
+    },
+
+    "RoleCodeBuildForCloudflareToSumoLogic": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForCloudflareToSumoLogic",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+
+    "CodeBuildForCloudFormationCloudflareToSumoLogic": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForCloudFormationCloudflareToSumoLogic"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["CloudFormation-Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Stopwatch source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                  },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/CloudFormation-Cloudflare-To-SumoLogic",
+                  "Type" : "GITHUB"
+              },
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForCloudFormationCloudflareToSumoLogic", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
+            }
+        }
+    },
+
+    "RoleCodeBuildForCloudFormationCloudflareToSumoLogic": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "CF-Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForCloudFormationCloudflareToSumoLogic",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["CloudFormation-Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["CloudFormation-Cloudflare-To-SumoLogic", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+
+    "CodeBuildForStepFunctionIgniter": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForStepFunctionIgniter"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["Step_Function_Igniter", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Igniter source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                  },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/Step_Function_Igniter",
+                  "Type" : "GITHUB"
+              },
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionIgniter", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
+            }
+        }
+    },
+
+    "RoleCodeBuildForStepFunctionIgniter": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Igniter", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForStepFunctionIgniter",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Igniter", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Igniter", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+
+    "CodeBuildForStepFunctionIterator": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForStepFunctionIterator"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["Step_Function_Iterator", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Iterator source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                  },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/Step_Function_Iterator",
+                  "Type" : "GITHUB"
+              },
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionIterator", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
+            }
+        }
+    },
+
+    "RoleCodeBuildForStepFunctionIterator": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Iterator", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForStepFunctionIterator",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Iterator", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Iterator", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+
+    "CodeBuildForStepFunctionRestart": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForStepFunctionRestart"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["Step_Function_Restart", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Restart source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                  },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/Step_Function_Restart",
+                  "Type" : "GITHUB"
+              },
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionRestart", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
+            }
+        }
+    },
+
+    "RoleCodeBuildForStepFunctionRestart": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Restart", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForStepFunctionRestart",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Restart", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Restart", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+
+    "CodeBuildForStepFunctionStopwatch": {
+            "Type" : "AWS::CodeBuild::Project",
+            "DependsOn": ["RoleCodeBuildForStepFunctionStopwatch"],
+            "Properties" : {
+                "Name" : { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]},
+                "Description" : "Keep a fresh copy of the Stopwatch source code in S3.",
+                "Source" : {
+                  "Auth" : {
+                      "Type" : "OAUTH"
+                  },
+                  "GitCloneDepth" : 1,
+                  "Location" : "https://github.com/Security7/Step_Function_Stopwatch",
+                  "Type" : "GITHUB"
+              },
+              "TimeoutInMinutes" : 60,
+              "Artifacts" : {
+                "Type": "no_artifacts"
+            },
+            "Environment" : {
+                "Type": "LINUX_CONTAINER",
+                "ComputeType": "BUILD_GENERAL1_SMALL",
+                "Image": "aws/codebuild/nodejs:8.11.0",
+                "EnvironmentVariables" : [
+                    {"Name" : "STAGE", "Type" : "PLAINTEXT", "Value" : { "Ref": "Environment" } }
+                ]
+            },
+            "ServiceRole" : { "Fn::GetAtt" : ["RoleCodeBuildForStepFunctionStopwatch", "Arn"] },
+            "Triggers" : {
+                "Webhook" : true
+            }
+        }
+    },
+
+    "RoleCodeBuildForStepFunctionStopwatch": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "RoleName": {"Fn::Join": ["", [ "CodeBuild", "-", "For", "-", "Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"} ]]},
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            ],
+            "Policies": [
+                {
+                    "PolicyName": "PolicyCodeBuildForStepFunctionStopwatch",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Resource": [
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]} ]]},
+                                    {"Fn::Join": ["", [ "arn", ":", "aws", ":", "logs", ":", { "Ref": "AWS::Region"}, ":", { "Ref": "AWS::AccountId"}, ":", "log-group", ":", "/", "aws", "/", "codebuild", "/", { "Fn::Join": ["", ["Step_Function_Stopwatch", "-", { "Ref": "AWS::StackName"}]]}, ":", "*"]]},
+                                ],
+                                "Action": [
+                                    "logs:CreateLogGroup",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+
+
+
+    },
+
+    "Outputs" : {
+
+        "Status" : {
+            "Description" : "We are done",
+            "Value" : "Done"
+        }
+
+    }
+}
